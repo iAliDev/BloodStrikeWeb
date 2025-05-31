@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ali Slayer - Programmer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for the body */
+        body {
+            font-family: 'Inter', sans-serif; /* Default font */
+            background: radial-gradient(circle at center, #2a3447 0%, #1a202c 100%); /* Dark radial gradient background */
+            color: #e2e8f0; /* Light text color */
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+            margin: 0; /* Ensure no default margins */
+            display: flex;
+            flex-direction: column; /* To stack content vertically */
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative; /* For canvas positioning relative to body */
+            cursor: none; /* Hide default cursor */
+        }
+
+        /* Custom font for coding-related text */
+        .coding-font {
+            font-family: 'Fira Code', 'Roboto Mono', monospace;
+        }
+
+        /* Canvas for plexus effect - set for background */
+        #electricityCanvas {
+            display: block;
+            background-color: transparent; /* Transparent canvas to show body background */
+            position: absolute; /* Use absolute for background positioning */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allows clicks to pass through */
+            z-index: -1; /* Place canvas in the background */
+        }
+
+        /* Style for the main content box with transparency */
+        .main-content-box {
+            background-color: rgba(31, 41, 55, 0.8); /* Dark gray with 80% transparency */
+            /* This rgba(31, 41, 55, 0.8) value is equivalent to bg-gray-800 with 0.8 opacity.
+               To increase transparency, reduce the 0.8 value to 0.7, 0.6, etc. */
+        }
+
+        /* Card-like button styles */
+        .card-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Base shadow */
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            color: white;
+            font-weight: bold;
+            font-size: 1.125rem;
+            gap: 0.75rem;
+            min-width: 220px; /* Ensure a minimum width for card appearance */
+            position: relative; /* For pseudo-elements or more complex effects */
+            overflow: hidden; /* For glow effects */
+        }
+
+        .card-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6); /* Larger shadow on hover */
+        }
+
+        .card-button-primary {
+            background: linear-gradient(to bottom right, #1e3a8a, #1d4ed8);
+            border: 1px solid #2563eb;
+        }
+        .card-button-primary:hover {
+            background: linear-gradient(to bottom right, #1e40af, #2563eb);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); /* Stronger blue glow on hover */
+        }
+
+        .card-button-secondary {
+            background: linear-gradient(to bottom right, #6b21a8, #7e22ce);
+            border: 1px solid #9333ea;
+        }
+        .card-button-secondary:hover {
+            background: linear-gradient(to bottom right, #7e22ce, #9333ea);
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.6); /* Stronger purple glow on hover */
+        }
+
+        /* Responsive image sizing for logos */
+        .language-logo {
+            width: 60px; /* Default size */
+            height: 60px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.5)); /* Subtle glow for logos */
+        }
+
+        @media (min-width: 768px) { /* Medium screens and up */
+            .language-logo {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        /* Enhanced box shadow for the main container */
+        .glowing-box-shadow {
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.6), 0 0 40px rgba(0, 191, 255, 0.3), 0 0 60px rgba(0, 191, 255, 0.1);
+        }
+
+        /* Text shadow for glowing effect */
+        .text-glow-blue {
+            text-shadow: 0 0 8px rgba(0, 191, 255, 0.8), 0 0 15px rgba(0, 191, 255, 0.5);
+        }
+
+        .text-glow-green {
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.8), 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        /* Style for the new mouse follower highlight */
+        #mouse-follower {
+            position: fixed;
+            width: 20px; /* Small circle size */
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(0, 191, 255, 0.7); /* Blue border */
+            /* Enhanced glow for PC */
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.7), /* Stronger inner glow */
+                        0 0 30px rgba(0, 191, 255, 0.4), /* Wider outer glow */
+                        0 0 45px rgba(0, 191, 255, 0.2); /* Even wider, softer glow */
+            pointer-events: none; /* Crucial: allows clicks to pass through */
+            transform: translate(-50%, -50%); /* Center the circle on the cursor */
+            z-index: 9999; /* Ensure it's on top */
+            opacity: 0; /* Hidden by default, will fade in */
+            transition: transform 0.05s ease-out, opacity 0.2s ease-out; /* Smooth movement and fade */
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+    <canvas id="electricityCanvas"></canvas>
+    <div id="mouse-follower"></div> 
+
+    <div class="max-w-4xl w-full p-8 rounded-xl glowing-box-shadow flex flex-col items-center space-y-8 relative z-10 main-content-box">
+        <div class="flex flex-col items-center space-y-4 border-b border-gray-700 pb-8 w-full">
+            <img src="AliSlayer.jpg" alt="Ali Slayer" class="w-36 h-36 md:w-48 md:h-48 rounded-full border-4 border-blue-500 shadow-xl object-cover">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-blue-400 text-center text-glow-blue">Ali Slayer</h1>
+        </div>
+        <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6 w-full justify-center">
+            <a href="https://t.me/AliSlayer" target="_blank" rel="noopener noreferrer" class="card-button card-button-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                    <path d="M18.364 5.636a2 2 0 0 0-2.828 0L12 9.172 8.464 5.636a2 2 0 0 0-2.828 2.828L9.172 12l-3.536 3.536a2 2 0 0 0 2.828 2.828L12 14.828l3.536 3.536a2 2 0 0 0 2.828-2.828L14.828 12l3.536-3.536a2 2 0 0 0 0-2.828zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/>
+                    <path d="M12 10.5c-2.481 0-4.5 2.019-4.5 4.5s2.019 4.5 4.5 4.5 4.5-2.019 4.5-4.5-2.019-4.5-4.5-4.5zm0 7c-1.378 0-2.5-1.122-2.5-2.5s1.122-2.5 2.5-2.5 2.5 1.122 2.5 2.5-1.122 2.5-2.5 2.5z"/>
+                    <path d="M12 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    <path d="M14.5 10.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    <path d="M9.5 10.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    <path d="M12 7a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    <path d="M17 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    <path d="M7 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    <path d="M14.5 15.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    <path d="M9.5 15.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                </svg>
+                <span>My Telegram</span>
+            </a>
+            <a href="https://discord.gg/slayernotfound" target="_blank" rel="noopener noreferrer" class="card-button card-button-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                    <path d="M20.5 0H3.5A3.504 3.504 0 0 0 0 3.5v17A3.504 3.504 0 0 0 3.5 24h17A3.504 3.504 0 0 0 24 20.5V3.5A3.504 3.504 0 0 0 20.5 0zM8.077 15.202c-1.39 0-2.516-1.126-2.516-2.516s1.126-2.516 2.516-2.516 2.516 1.126 2.516 2.516-1.126 2.516-2.516 2.516zm7.846 0c-1.39 0-2.516-1.126-2.516-2.516s1.126-2.516 2.516-2.516 2.516 1.126 2.516 2.516-1.126 2.516-2.516 2.516z"/>
+                </svg>
+                <span>My Discord</span>
+            </a>
+        </div>
+
+        <div class="text-center space-y-4 border-b border-gray-700 pb-8 w-full">
+            <p style="color: rgb(0, 255, 213);" class="text-lg md:text-xl leading-relaxed coding-font">
+                <span class="text-glow-green"><B>i am Ali Slayer, 18y.o Programmer</B></span><br><br>
+                <span class="text-glow-green">The sunset is beautiful, isn't it?</span><br><br>
+
+                <span style="color: chocolate;" class="text-glow-green"><b>In Love With Coding , Never Give Up Learning</b></span><br>
+            </p>
+            <p class="text-2xl md:text-3xl font-bold text-green-400 coding-font text-glow-green">
+                "Only In The Darkness You Can See The Stars"
+            </p>
+        </div>
+
+        <div class="w-full border-b border-gray-700 pb-8">
+            <h2 class="text-2xl md:text-3xl font-semibold text-center mb-6 text-yellow-400 text-glow-blue">My Stack</h2>
+            <div class="flex flex-wrap justify-center items-center gap-6 md:gap-8">
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold text-gray-400 mb-1">Java</p>
+                    <img src="https://data.cyclowiki.org/images/thumb/a/a4/Java_logo_and_wordmark.svg/600px-Java_logo_and_wordmark.svg.png?20190209143523" alt="Java" class="language-logo rounded-lg shadow-md">
+                </div>
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold text-gray-400 mb-1">Python</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/120px-Python-logo-notext.svg.png" alt="Python" class="language-logo rounded-lg shadow-md">
+                </div>
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold text-gray-400 mb-1">JavaScript</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Unofficial_JavaScript_logo_2.svg/120px-Unofficial_JavaScript_logo_2.svg.png" alt="JavaScript" class="language-logo rounded-lg shadow-md">
+                </div>
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold text-gray-400 mb-1">CSS</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/CSS3_logo_and_wordmark.svg/120px-CSS3_logo_and_wordmark.svg.png" alt="CSS" class="language-logo rounded-lg shadow-md">
+                </div>
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold text-gray-400 mb-1">C#</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Csharp_Logo.png/120px-Csharp_Logo.png" alt="C#" class="language-logo rounded-lg shadow-md">
+                </div>
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold text-gray-400 mb-1">HTML</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/HTML5_logo_and_wordmark.svg/120px-HTML5_logo_and_wordmark.svg.png" alt="HTML" class="language-logo rounded-lg shadow-md">
+                </div>
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold text-gray-400 mb-1">a little Kotlin</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Kotlin_Icon.png/120px-Kotlin_Icon.png" alt="Kotlin" class="language-logo rounded-lg shadow-md">
+                </div>
+                <div class="flex flex-col items-center">
+                    <p class="text-sm font-semibold text-gray-400 mb-1">PHP</p>
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/PHP-logo.svg/120px-PHP-logo.svg.png" alt="PHP" class="language-logo rounded-lg shadow-md">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      // Get canvas and rendering context
+      const canvas = document.getElementById('electricityCanvas');
+      const ctx = canvas.getContext('2d');
+      const mouseFollower = document.getElementById('mouse-follower'); // Get the new mouse follower element
+
+      // Set canvas size to full window
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+
+      // Settings for plexus effect
+      const particles = [];
+      const numParticles = 100; // Number of particles
+      const lineDistance = 100; // Max distance to draw a line between particles
+      const particleSpeed = 0.5; // Particle movement speed
+      const rotationSpeed = 0.005; // Rotation speed of the effect
+      let mouseX = width / 2;
+      let mouseY = height / 2;
+      let currentRotation = 0;
+
+      // Particle class
+      class Particle {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.vx = (Math.random() - 0.5) * particleSpeed * 2; // Random horizontal velocity
+          this.vy = (Math.random() - 0.5) * particleSpeed * 2; // Random vertical velocity
+          this.radius = 1.5; // Particle radius
+        }
+
+        // Update particle position
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+
+          // Wrap particle around if it goes out of bounds
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+        }
+
+        // Draw particle
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, 1)`; // White color with full opacity (always visible)
+          ctx.fill();
+        }
+      }
+
+      // Create initial particles
+      function createParticles() {
+        for (let i = 0; i < numParticles; i++) {
+          particles.push(new Particle(Math.random() * width, Math.random() * height));
+        }
+      }
+
+      // Draw lines between nearby particles
+      function drawLines() {
+        for (let i = 0; i < numParticles; i++) {
+          for (let j = i + 1; j < numParticles; j++) {
+            const p1 = particles[i];
+            const p2 = particles[j];
+            const dist = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+
+            if (dist < lineDistance) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              // Line opacity based on distance (always visible)
+              const opacity = (1 - (dist / lineDistance));
+              ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      // Main animation function
+      function animate() {
+        ctx.clearRect(0, 0, width, height); // Clear canvas
+
+        // Save context state for rotation
+        ctx.save();
+
+        // Translate origin to mouse position for rotation
+        ctx.translate(mouseX, mouseY);
+        ctx.rotate(currentRotation);
+        ctx.translate(-mouseX, -mouseY);
+
+        // Update and draw particles
+        particles.forEach(p => {
+          p.update();
+          p.draw();
+        });
+
+        // Draw lines
+        drawLines();
+
+        // Restore context state
+        ctx.restore();
+
+        // Continuously increase rotation for constant movement
+        currentRotation += rotationSpeed;
+
+        requestAnimationFrame(animate); // Request next animation frame
+      }
+
+      // Window resize event
+      window.addEventListener('resize', () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        // Recreate particles to avoid positioning issues
+        particles.length = 0; // Clear existing particles
+        createParticles(); // Create new particles
+      });
+
+      // Mouse move event for desktop
+      window.addEventListener('mousemove', (e) => {
+        if (window.innerWidth > 768) {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          // Update mouse follower position
+          mouseFollower.style.left = `${e.clientX}px`;
+          mouseFollower.style.top = `${e.clientY}px`;
+          mouseFollower.style.opacity = '1'; // Show follower
+        }
+      });
+
+      // Hide mouse follower when mouse leaves the document on desktop
+      document.body.addEventListener('mouseleave', () => {
+          if (window.innerWidth > 768) {
+              mouseFollower.style.opacity = '0'; // Fade out follower
+          }
+      });
+
+
+      // Touch events for mobile
+      window.addEventListener('touchstart', (e) => {
+        if (window.innerWidth <= 768) {
+          // e.preventDefault(); // Commented out to avoid blocking default browser behavior
+          mouseX = e.touches[0].clientX;
+          mouseY = e.touches[0].clientY;
+
+          // Show and position mouse follower
+          mouseFollower.style.left = `${e.touches[0].clientX}px`;
+          mouseFollower.style.top = `${e.touches[0].clientY}px`;
+          mouseFollower.style.opacity = '1'; // Show follower
+          
+          // Apply "pop" effect: scale up quickly then return to normal
+          mouseFollower.style.transition = 'transform 0.1s ease-out, opacity 0.2s ease-out'; // Faster transition for pop
+          mouseFollower.style.transform = 'translate(-50%, -50%) scale(1.5)'; // Pop out
+
+          setTimeout(() => {
+            mouseFollower.style.transform = 'translate(-50%, -50%) scale(1)'; // Return to normal size
+            // Reset transition after pop for smoother fade out later
+            mouseFollower.style.transition = 'transform 0.05s ease-out, opacity 0.2s ease-out'; 
+          }, 100); // Pop duration
+        }
+      });
+
+      window.addEventListener('touchmove', (e) => {
+          if (window.innerWidth <= 768) {
+              // Prevent default only if necessary
+              if (e.cancelable) e.preventDefault();
+              mouseX = e.touches[0].clientX;
+              mouseY = e.touches[0].clientY;
+              // Update mouse follower position
+              mouseFollower.style.left = `${e.touches[0].clientX}px`;
+              mouseFollower.style.top = `${e.touches[0].clientY}px`;
+          }
+      });
+
+      window.addEventListener('touchend', () => {
+        if (window.innerWidth <= 768) {
+          // Hide mouse follower after touch ends
+          mouseFollower.style.opacity = '0'; // Fade out follower
+        }
+      });
+
+      // Start the application
+      createParticles();
+      animate();
+    </script>
+</body>
+</html>
